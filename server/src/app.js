@@ -6,6 +6,7 @@ import authRoutes from './routes/auth.js';
 import itemRoutes from './routes/items.js';
 import userRoutes from './routes/users.js';
 import settingRoutes from './routes/settings.js';
+import { csrfProtection, csrfTokenHandler } from './middleware/csrf.js';
 
 const app = express();
 
@@ -20,6 +21,12 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 app.get('/api/health', (req, res) => res.json({ ok: true }));
+
+// Issue a CSRF token (safe GET, so it isn't checked itself).
+app.get('/api/csrf-token', csrfTokenHandler);
+// Require a valid CSRF token on every state-changing request (POST/PUT/PATCH/
+// DELETE), except the pre-auth login/register routes.
+app.use(csrfProtection);
 
 app.use('/api/auth', authRoutes);
 app.use('/api/items', itemRoutes);
